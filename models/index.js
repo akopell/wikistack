@@ -1,9 +1,9 @@
-const Sequelize = require("sequelize");
-const db = new Sequelize("postgres://localhost:5432/wikistack", {
+const Sequelize = require('sequelize');
+const db = new Sequelize('postgres://localhost:5432/wikistack', {
   logging: false,
 });
 
-const Page = db.define("page", {
+const Page = db.define('page', {
   title: {
     type: Sequelize.STRING,
     allowNull: false,
@@ -19,12 +19,20 @@ const Page = db.define("page", {
     allowNull: false,
   },
   status: {
-    type: Sequelize.ENUM("open", "closed"),
-    defaultValue: "open",
+    type: Sequelize.ENUM('open', 'closed'),
+    defaultValue: 'open',
   },
 });
 
-const User = db.define("user", {
+Page.beforeValidate((pageInstance) => {
+  const title = pageInstance.title;
+  function generateSlug(title) {
+    return title.replace(/\s+/g, '_').replace(/\W/g, '');
+  }
+  pageInstance.slug = generateSlug(title);
+});
+
+const User = db.define('user', {
   name: {
     type: Sequelize.STRING,
     allowNull: false,
@@ -38,6 +46,8 @@ const User = db.define("user", {
     },
   },
 });
+
+Page.belongsTo(User, { as: 'author' });
 
 module.exports = {
   db,
